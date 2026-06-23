@@ -93,7 +93,7 @@ for item in items:
         if item["kind"] == "nota":
             st.markdown(item["nota"])
         else:
-            if item["nota"]:
+            if item["nota"] and str(item["nota"]) not in ("", "nan", "None"):
                 st.info(f"💬 **Nota allenatore:** {item['nota']}")
             if item["drive_id"]:
                 render_content(item["drive_id"], item.get("drive_type","file"), item["titolo"])
@@ -110,6 +110,6 @@ if not df_c.empty:
             for _, r in sub.iterrows():
                 icon = ICONS.get(r["tipo"], "📁")
                 with st.expander(f"{icon} {r['titolo']}  ·  {r['data']}"):
-                    if r.get("nota"):
+                    if r.get("nota") and str(r["nota"]) not in ("", "nan", "None"):
                         st.info(f"💬 **Nota allenatore:** {r['nota']}")
                     render_content(r["drive_id"], r.get("drive_type","file"), r["titolo"])
