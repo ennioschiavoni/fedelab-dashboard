@@ -28,9 +28,23 @@ CAT_ICONS = {
 }
 
 def drive_embed(drive_id: str, drive_type: str) -> str:
+    if drive_type == "dropbox":
+        return None  # Dropbox non supporta embed — usiamo link diretto
     if drive_type == "folder":
         return f"https://drive.google.com/embeddedfolderview?id={drive_id}#list"
     return f"https://drive.google.com/file/d/{drive_id}/preview"
+
+def render_content(drive_id, drive_type, titolo):
+    if drive_type == "dropbox":
+        # Dropbox: mostra link diretto
+        url = drive_id  # per dropbox salviamo l'URL direttamente
+        st.markdown(f"[📥 Apri / Scarica: {titolo}]({url})")
+    else:
+        url = drive_embed(drive_id, drive_type)
+        if url:
+            st.components.v1.iframe(url, height=420, scrolling=True)
+            base = "https://drive.google.com/drive/folders" if drive_type == "folder" else "https://drive.google.com/file/d"
+            st.caption(f"[Apri in Google Drive ↗]({base}/{drive_id})")
 
 # ── Home ──────────────────────────────────────────────────────────────────────
 st.title("🏐 Federico Roberti — Lab 2026")
@@ -82,9 +96,7 @@ for item in items:
             if item["nota"]:
                 st.info(f"💬 **Nota allenatore:** {item['nota']}")
             if item["drive_id"]:
-                url = drive_embed(item["drive_id"], item.get("drive_type","file"))
-                st.components.v1.iframe(url, height=420, scrolling=True)
-                st.caption(f"[Apri in Google Drive ↗](https://drive.google.com/{'drive/folders' if item.get('drive_type')=='folder' else 'file/d'}/{item['drive_id']})")
+                render_content(item["drive_id"], item.get("drive_type","file"), item["titolo"])
 
 # ── Per categoria ─────────────────────────────────────────────────────────────
 if not df_c.empty:
@@ -100,6 +112,4 @@ if not df_c.empty:
                 with st.expander(f"{icon} {r['titolo']}  ·  {r['data']}"):
                     if r.get("nota"):
                         st.info(f"💬 **Nota allenatore:** {r['nota']}")
-                    url = drive_embed(r["drive_id"], r.get("drive_type","file"))
-                    st.components.v1.iframe(url, height=420, scrolling=True)
-                    st.caption(f"[Apri in Google Drive ↗](https://drive.google.com/{'drive/folders' if r.get('drive_type')=='folder' else 'file/d'}/{r['drive_id']})")
+                    render_content(r["drive_id"], r.get("drive_type","file"), r["titolo"])
