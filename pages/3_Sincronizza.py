@@ -17,8 +17,8 @@ st.caption("Scansiona Dropbox e Google Drive e importa i nuovi file nel database
 conn = st.connection("neon", type="sql")
 
 # ── Helpers Dropbox ───────────────────────────────────────────────────────────
-DBX_TOKEN  = st.secrets["dropbox"]["token"]
-DBX_ROOT   = st.secrets["dropbox"]["root_path"]
+DBX_TOKEN  = st.secrets.get("dropbox", {}).get("token", "")
+DBX_ROOT   = st.secrets.get("dropbox", {}).get("root_path", "/__Personale2025/Federico_Volley")
 DBX_HEADERS = {"Authorization": f"Bearer {DBX_TOKEN}", "Content-Type": "application/json"}
 
 SKIP_EXT = {"jpg", "jpeg", "png", "gif", "bmp", "tiff", "heic", "heif"}
@@ -115,6 +115,10 @@ tab_dbx, tab_drive = st.tabs(["📦 Dropbox", "📂 Google Drive"])
 # ────────────────────────────────────── DROPBOX ───────────────────────────────
 with tab_dbx:
     st.markdown(f"**Cartella radice:** `{DBX_ROOT}` (sottocartelle incluse)")
+
+    if not DBX_TOKEN:
+        st.warning("⚠ Token Dropbox non configurato. Aggiungilo nei Secrets di Streamlit Cloud sotto `[dropbox] token`.")
+        st.stop()
 
     if st.button("🔄 Sincronizza Dropbox", type="primary"):
         with st.spinner("Scansione Dropbox in corso…"):
