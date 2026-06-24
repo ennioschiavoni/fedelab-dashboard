@@ -56,6 +56,34 @@ if df_c.empty and df_n.empty:
     st.info("Nessun contenuto ancora caricato. L'allenatore aggiungerà presto materiale.")
     st.stop()
 
+# ── Sidebar – filtri ──────────────────────────────────────────────────────────
+TYPE_MAP = {
+    "Video": ["video", "clip_partita"],
+    "PDF":   ["pdf", "report_dv"],
+    "Word":  ["doc"],
+}
+
+with st.sidebar:
+    st.markdown("### 🔍 Filtri")
+
+    st.markdown("**Tipologia**")
+    tipi_sel = [t for t in TYPE_MAP if st.checkbox(t, value=True, key=f"tipo_{t}")]
+
+    st.markdown("**Anno**")
+    anni_db = sorted(
+        df_c["data"].apply(lambda d: pd.to_datetime(d).year).unique().tolist()
+    ) if not df_c.empty else []
+    anni_range = list(range(2020, 2027))
+    anni_sel = [a for a in anni_range if st.checkbox(str(a), value=(a in anni_db), key=f"anno_{a}")]
+
+# ── Applica filtri a df_c ─────────────────────────────────────────────────────
+tipi_interni = [t for label in tipi_sel for t in TYPE_MAP[label]]
+if not df_c.empty:
+    if tipi_sel:
+        df_c = df_c[df_c["tipo"].isin(tipi_interni)]
+    if anni_sel:
+        df_c = df_c[df_c["data"].apply(lambda d: pd.to_datetime(d).year).isin(anni_sel)]
+
 # ── KPI rapidi ────────────────────────────────────────────────────────────────
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Video / Clip", len(df_c[df_c["tipo"].isin(["video","clip_partita"])]))
